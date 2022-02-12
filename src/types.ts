@@ -11,6 +11,6 @@ export interface NhostApolloClientOptions {
 }
 
 export interface NhostAuth {
-  isAuthenticated: () => boolean | null;
-  getJWTToken: () => string | null;
+  isAuthenticated: () => boolean;
+  getJWTToken: () => string | undefined;
 }
