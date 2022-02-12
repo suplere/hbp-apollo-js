@@ -37,9 +37,15 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
   const ssr = typeof window === "undefined";
   const uri = options.gqlEndpoint;
 
-  const wsUri = uri.startsWith("https")
-    ? uri.replace(/^https/, "wss")
-    : uri.replace(/^http/, "ws");
+  let wsUri: string 
+  
+  if (options.wsEndpoint) {
+    wsUri = options.wsEndpoint
+  } else {
+    wsUri = uri.startsWith("https")
+      ? uri.replace(/^https/, "wss")
+      : uri.replace(/^http/, "ws");
+  }
 
   const wsLink = !ssr
     ? new WebSocketLink({

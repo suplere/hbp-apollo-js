@@ -1,6 +1,7 @@
 export interface NhostApolloClientOptions {
   auth?: NhostAuth;
   gqlEndpoint: string;
+  wsEndpoint?: string;
   headers?: {
     [key: string]: any;
   };
