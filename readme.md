@@ -1,2 +1,2 @@
-# HASURA BACKED PLUS - storage
+# HASURA BACKED PLUS - GraphQL client - Apollo
 
