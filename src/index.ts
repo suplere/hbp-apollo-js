@@ -13,6 +13,8 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { OperationDefinitionNode } from "graphql";
 import { setContext } from "@apollo/client/link/context";
+import { SubscriptionClient } from "subscriptions-transport-ws";
+import { url } from "inspector";
 
 export function generateNhostApolloClient(options: NhostApolloClientOptions) {
   const getheaders = (auth: NhostAuth | undefined) => {
@@ -47,6 +49,20 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
       : uri.replace(/^http/, "ws");
   }
 
+  const wsClient = new SubscriptionClient(wsUri, {
+    reconnect: true,
+    lazy: true,
+    connectionParams: () => {
+      const connectionHeaders = getheaders(options.auth);
+      return {
+        headers: connectionHeaders,
+      };
+    },
+  });
+
+  const wsLink = !ssr ? new WebSocketLink(wsClient) : null;
+
+  /*
   const wsLink = !ssr
     ? new WebSocketLink({
         uri: wsUri,
@@ -62,6 +78,7 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
         },
       })
     : null;
+  */
 
   const httplink = createHttpLink({
     uri,
@@ -123,11 +140,11 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
   const client = new ApolloClient(apolloClientOptions);
 
   client.onResetStore(async () => {
-    console.log("RESET STORE")
-    console.log("LINK", link())
-    console.log("HEADERS", getheaders(options.auth));
+    // console.log("RESET STORE")
+    // console.log("LINK", link())
+    // console.log("HEADERS", getheaders(options.auth));
     client.setLink(link());
   });
 
-  return { client, wsLink };
+  return { client, wsLink, wsClient };
 }
