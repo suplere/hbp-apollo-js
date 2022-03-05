@@ -124,6 +124,8 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
 
   client.onResetStore(async () => {
     console.log("RESET STORE")
+    console.log("LINK", link())
+    console.log("HEADERS", getheaders(options.auth));
     client.setLink(link());
   });
 
