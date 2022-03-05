@@ -14,7 +14,7 @@ import { getMainDefinition } from "@apollo/client/utilities";
 import { OperationDefinitionNode } from "graphql";
 import { setContext } from "@apollo/client/link/context";
 import { SubscriptionClient } from "subscriptions-transport-ws";
-import { url } from "inspector";
+
 
 export function generateNhostApolloClient(options: NhostApolloClientOptions) {
   const getheaders = (auth: NhostAuth | undefined) => {
