@@ -123,6 +123,7 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
   const client = new ApolloClient(apolloClientOptions);
 
   client.onResetStore(async () => {
+    console.log("RESET STORE")
     client.setLink(link());
   });
 
