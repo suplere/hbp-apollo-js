@@ -37,10 +37,10 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
   const ssr = typeof window === "undefined";
   const uri = options.gqlEndpoint;
 
-  let wsUri: string 
-  
+  let wsUri: string;
+
   if (options.wsEndpoint) {
-    wsUri = options.wsEndpoint
+    wsUri = options.wsEndpoint;
   } else {
     wsUri = uri.startsWith("https")
       ? uri.replace(/^https/, "wss")
@@ -76,22 +76,41 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
     };
   });
 
-  // What does this do?
-  const link = !ssr
-    ? split(
-        ({ query }) => {
-          const { kind, operation } = getMainDefinition(
-            query
-          ) as OperationDefinitionNode;
-          return kind === "OperationDefinition" && operation === "subscription";
-        },
-        wsLink as ApolloLink,
-        authLink.concat(httplink)
-      )
-    : httplink;
+  function link() {
+    // What does this do?
+    const link = !ssr
+      ? split(
+          ({ query }) => {
+            const { kind, operation } = getMainDefinition(
+              query
+            ) as OperationDefinitionNode;
+            return (
+              kind === "OperationDefinition" && operation === "subscription"
+            );
+          },
+          wsLink as ApolloLink,
+          authLink.concat(httplink)
+        )
+      : httplink;
+
+    // add link
+    // if (typeof options.onError === "function") {
+    //   apolloClientOptions.link = from([
+    //     options.onError as RequestHandler,
+    //     link,
+    //   ]);
+    // } else {
+    //   apolloClientOptions.link = from([link]);
+    // }
+    return typeof options.onError === "function"
+      ? from([options.onError as RequestHandler, link])
+      : from([link]);
+  }
+  
 
   const apolloClientOptions: ApolloClientOptions<any> = {
     ssrMode: ssr,
+    link: link(),
     cache: options.cache || new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
@@ -101,14 +120,11 @@ export function generateNhostApolloClient(options: NhostApolloClientOptions) {
     connectToDevTools: options.connectToDevTools,
   };
 
-  // add link
-  if (typeof options.onError === "function") {
-    apolloClientOptions.link = from([options.onError as RequestHandler, link]);
-  } else {
-    apolloClientOptions.link = from([link]);
-  }
-
   const client = new ApolloClient(apolloClientOptions);
+
+  client.onResetStore(async () => {
+    client.setLink(link());
+  });
 
   return { client, wsLink };
 }
